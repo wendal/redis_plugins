@@ -1,20 +1,15 @@
 #include <redis.h>
 
-static void* flashdb;
-
-void nop(redisClient *c){
-    addReply(c, shared.ok);
-}
+static void* flushdb;
 
 extern int redis_lib_init(redisClient *c) {
-    if (flashdb) return 1;
-    printf("%d", server.commands->iterators);
-    flashdb = dictFetchValue(server.commands, sdsnew("FLUSHDB"));
+    flushdb = dictFetchValue(server.commands, sdsnew("FLUSHDB"));
+    if (!flushdb) return 1;
     dictDeleteNoFree(server.commands, sdsnew("FLUSHDB"));
     return 0;
 }
 
 extern void redis_lib_depose(redisClient *c) {
-    dictAdd(server.commands, sdsnew("FLUSHDB"), flashdb);
+    dictAdd(server.commands, sdsnew("FLUSHDB"), flushdb);
     return;
 }
